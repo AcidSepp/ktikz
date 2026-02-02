@@ -19,7 +19,7 @@ fun PrintWriter.drawPoint(
 ) {
     when (shape) {
         Shape.CIRCLE -> {
-            this.println("\\filldraw[line width=0.00001, color=${color.toColorString()}] (${x},${y}) circle (${size / 2.0});")
+            drawCircle(x, y, size / 2.0, color)
         }
 
         Shape.BOX -> {
@@ -66,7 +66,8 @@ fun PrintWriter.drawText(
     scale: Double = 0.25,
     color: Color = Color.BLACK,
 ) {
-    this.println("\\node[scale=$scale, color=${color.toColorString()}, anchor=$anchor, align=center] at ($x,${y}) {\\tiny $text};")
+    val opacityString = if (color.alpha != 255) ", opacity=${color.toAlphaString()}" else ""
+    this.println("\\node[scale=$scale, color=${color.toColorString()}, anchor=$anchor, align=center$opacityString] at ($x,${y}) {\\tiny $text};")
 }
 
 fun PrintWriter.drawRect(

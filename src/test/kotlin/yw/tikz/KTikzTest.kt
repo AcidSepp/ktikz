@@ -3,9 +3,12 @@ package yw.tikz
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import yw.ktikz.yw.ktikz.Shape
 import yw.ktikz.yw.ktikz.drawCircle
 import yw.ktikz.yw.ktikz.drawLine
+import yw.ktikz.yw.ktikz.drawPoint
 import yw.ktikz.yw.ktikz.drawRect
+import yw.ktikz.yw.ktikz.drawText
 import java.awt.Color
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
@@ -15,7 +18,7 @@ import kotlin.io.path.writeText
 class KTikzTest {
 
     @Test
-    fun test_drawSimpleLine(@TempDir tempDir: Path) {
+    fun drawSimpleLine(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         printWriter.drawLine(0.0, 0.0, 1.0, 1.0)
@@ -27,7 +30,7 @@ class KTikzTest {
     }
 
     @Test
-    fun test_drawComplexLine(@TempDir tempDir: Path) {
+    fun drawComplexLine(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         val color = Color(100, 101, 102)
@@ -40,7 +43,7 @@ class KTikzTest {
     }
 
     @Test
-    fun test_drawCircle(@TempDir tempDir: Path) {
+    fun drawCircle(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         printWriter.drawCircle(0.0, 0.0, 0.5)
@@ -52,7 +55,7 @@ class KTikzTest {
     }
 
     @Test
-    fun test_drawComplexCircle(@TempDir tempDir: Path) {
+    fun drawComplexCircle(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         val strokeColor = Color(100, 101, 102, 102)
@@ -66,7 +69,7 @@ class KTikzTest {
     }
 
     @Test
-    fun test_drawRect(@TempDir tempDir: Path) {
+    fun drawRect(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         printWriter.drawRect(0.0, 0.0, 1.0, 1.0)
@@ -78,7 +81,7 @@ class KTikzTest {
     }
 
     @Test
-    fun test_drawComplexRect(@TempDir tempDir: Path) {
+    fun drawComplexRect(@TempDir tempDir: Path) {
         val pos = ByteArrayOutputStream()
         val printWriter = PrintWriter(pos)
         val strokeColor = Color(100, 101, 102, 102)
@@ -89,6 +92,71 @@ class KTikzTest {
         assertThat(
             pos.toString().trim()
         ).isEqualTo("\\filldraw[color={rgb,255:red,100; green,101; blue,102}, opacity=0.4, line width=0.1, fill={rgb,255:red,99; green,98; blue,97}, fill opacity=0.2] (0.0,0.0) rectangle (1.0,1.0);")
+    }
+
+    @Test
+    fun drawText(@TempDir tempDir: Path) {
+        val pos = ByteArrayOutputStream()
+        val printWriter = PrintWriter(pos)
+        printWriter.drawText(0.0, 0.0, "hello")
+        printWriter.flush()
+        assertThat(
+            pos.toString().trim()
+        ).isEqualTo("\\node[scale=0.25, color={rgb,255:red,0; green,0; blue,0}, anchor=north, align=center] at (0.0,0.0) {\\tiny hello};")
+        assertLatex(pos, tempDir)
+    }
+
+    @Test
+    fun drawComplexText(@TempDir tempDir: Path) {
+        val pos = ByteArrayOutputStream()
+        val printWriter = PrintWriter(pos)
+        val strokeColor = Color(100, 101, 102, 102)
+        printWriter.drawText(0.0, 0.0, "hello", anchor = "south", scale = 0.5, color = strokeColor)
+        printWriter.flush()
+        assertThat(
+            pos.toString().trim()
+        ).isEqualTo("\\node[scale=0.5, color={rgb,255:red,100; green,101; blue,102}, anchor=south, align=center, opacity=0.4] at (0.0,0.0) {\\tiny hello};")
+        assertLatex(pos, tempDir)
+    }
+
+    @Test
+    fun drawPointBox(@TempDir tempDir: Path) {
+        val pos = ByteArrayOutputStream()
+        val printWriter = PrintWriter(pos)
+        printWriter.drawPoint(0.0, 0.0, Shape.BOX)
+        printWriter.flush()
+        assertThat(
+            pos.toString().trim()
+        ).isEqualTo("\\draw[color={rgb,255:red,0; green,0; blue,0}, line width=0.05] (-0.0075,-0.0075) rectangle (0.0075,0.0075);")
+        assertLatex(pos, tempDir)
+    }
+
+    @Test
+    fun drawPointCircle(@TempDir tempDir: Path) {
+        val pos = ByteArrayOutputStream()
+        val printWriter = PrintWriter(pos)
+        printWriter.drawPoint(0.0, 0.0, Shape.CIRCLE)
+        printWriter.flush()
+        assertThat(
+            pos.toString().trim()
+        ).isEqualTo("\\draw[color={rgb,255:red,0; green,0; blue,0}, line width=0.05] (0.0,0.0) circle (0.0075);")
+        assertLatex(pos, tempDir)
+    }
+
+    @Test
+    fun drawPointX(@TempDir tempDir: Path) {
+        val pos = ByteArrayOutputStream()
+        val printWriter = PrintWriter(pos)
+        printWriter.drawPoint(0.0, 0.0, Shape.X)
+        printWriter.flush()
+        assertThat(
+            pos.toString().lines()
+        ).satisfies(
+            { lines ->
+                assertThat(lines[0].trim()).isEqualTo("\\draw[line width=0.05, color={rgb,255:red,0; green,0; blue,0}] (-0.0075,-0.0075) -- (0.0075,0.0075);")
+                assertThat(lines[1].trim()).isEqualTo("\\draw[line width=0.05, color={rgb,255:red,0; green,0; blue,0}] (-0.0075,0.0075) -- (0.0075,-0.0075);")
+            })
+        assertLatex(pos, tempDir)
     }
 
     private fun assertLatex(pos: ByteArrayOutputStream, tempDir: Path) {
@@ -103,7 +171,6 @@ class KTikzTest {
                     \end{tikzpicture}
                 \end{document}
             """.trimIndent()
-        println(latexCode)
 
         val latexFilePath = tempDir.resolve("output.tex").apply {
             writeText(latexCode)
