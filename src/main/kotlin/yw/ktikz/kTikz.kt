@@ -7,9 +7,7 @@ const val LINE_WIDTH = 0.05
 const val POINT_SIZE = 0.015
 
 enum class Shape {
-    CIRCLE,
-    BOX,
-    X
+    CIRCLE, BOX, X
 }
 
 fun PrintWriter.drawPoint(
@@ -80,18 +78,31 @@ fun PrintWriter.drawRect(
     lineWidth: Double = LINE_WIDTH,
     fillColor: Color? = null,
 ) {
+    this.println("${getShapeString(strokeColor, fillColor, lineWidth)} ($xStart,$yStart) rectangle ($xEnd,$yEnd);")
+}
+
+fun PrintWriter.drawCircle(
+    x: Double,
+    y: Double,
+    radius: Double,
+    strokeColor: Color = Color.BLACK,
+    lineWidth: Double = LINE_WIDTH,
+    fillColor: Color? = null
+) {
+    this.println("${getShapeString(strokeColor, fillColor, lineWidth)} ($x,$y) circle ($radius);")
+}
+
+private fun getShapeString(strokeColor: Color, fillColor: Color?, lineWidth: Double): String {
     val strokeOpacityString = if (strokeColor.alpha != 255) ", opacity=${strokeColor.toAlphaString()}" else ""
     val strokeColorString = "color=${strokeColor.toColorString()}$strokeOpacityString"
 
-    val fillOpacity = if (fillColor != null && strokeColor.alpha != 255) ", fill opacity=${fillColor.toAlphaString()}" else ""
+    val fillOpacity =
+        if (fillColor != null && strokeColor.alpha != 255) ", fill opacity=${fillColor.toAlphaString()}" else ""
     val fillString = fillColor?.let { ", fill=${fillColor.toColorString()}$fillOpacity" } ?: ""
     val fillPrefix = fillColor?.let { "fill" } ?: ""
 
-    this.println("\\${fillPrefix}draw[$strokeColorString, line width=$lineWidth$fillString] ($xStart,$yStart) rectangle ($xEnd,$yEnd);")
-}
-
-fun PrintWriter.drawCircle(x: Double, y: Double, radius: Double, color: Color = Color.BLACK) {
-    this.println("\\draw[line width=$LINE_WIDTH, color=${color.toColorString()}] ($x,$y) circle ($radius);")
+    val shapeString = "\\${fillPrefix}draw[$strokeColorString, line width=$lineWidth$fillString]"
+    return shapeString
 }
 
 private fun Color.toColorString() = "{rgb,255:red,$red; green,$green; blue,$blue}"
