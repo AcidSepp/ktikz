@@ -1,0 +1,14 @@
+[versions]
+junit-jupiter = "6.0.2"
+kotlin = "2.3.0"
+commons_math3 = "3.6.1"
+assertj = "3.27.7"
+mockito = "5.18.0"
+
+[libraries]
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+commons_math3 = { module = "org.apache.commons:commons-math3", version.ref = "commons_math3" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

@@ -1,0 +1,95 @@
+package yw.ktikz.yw.ktikz
+
+import java.awt.Color
+import java.io.PrintWriter
+
+const val LINE_WIDTH = 0.05
+const val POINT_SIZE = 0.015
+
+enum class Shape {
+    CIRCLE,
+    BOX,
+    X
+}
+
+fun PrintWriter.drawPoint(
+    x: Double,
+    y: Double,
+    shape: Shape = Shape.CIRCLE,
+    size: Double = POINT_SIZE,
+    color: Color = Color.BLACK,
+) {
+    when (shape) {
+        Shape.CIRCLE -> {
+            this.println("\\filldraw[line width=0.00001, color=${color.toColorString()}] (${x},${y}) circle (${size / 2.0});")
+        }
+
+        Shape.BOX -> {
+            val xLeft = x - (size / 2.0)
+            val yLeft = y - (size / 2.0)
+            val xRight = x + (size / 2.0)
+            val yRight = y + (size / 2.0)
+            this.drawRect(xLeft, yLeft, xRight, yRight, strokeColor = color)
+        }
+
+        Shape.X -> {
+            val xDownLeft = x - (size / 2.0)
+            val yDownLeft = y - (size / 2.0)
+            val xUpRight = x + (size / 2.0)
+            val yUpRight = y + (size / 2.0)
+            val xUpLeft = x - (size / 2.0)
+            val yUpLeft = y + (size / 2.0)
+            val xDownRight = x + (size / 2.0)
+            val yDownRight = y - (size / 2.0)
+            this.drawLine(xDownLeft, yDownLeft, xUpRight, yUpRight, color = color)
+            this.drawLine(xUpLeft, yUpLeft, xDownRight, yDownRight, color = color)
+        }
+    }
+}
+
+fun PrintWriter.drawLine(
+    xStart: Double,
+    yStart: Double,
+    xEnd: Double,
+    yEnd: Double,
+    color: Color = Color.BLACK,
+    lineWidth: Double = LINE_WIDTH,
+    dotted: Boolean = false,
+) {
+    val pattern = if (dotted) ", dash pattern={on 0.5 off 0.5}" else ""
+    this.println("\\draw[line width=$lineWidth, color=${color.toColorString()}$pattern] (${xStart},${yStart}) -- (${xEnd},${yEnd});")
+}
+
+fun PrintWriter.drawText(
+    x: Double,
+    y: Double,
+    text: String,
+    anchor: String = "north",
+    scale: Double = 0.25,
+    color: Color = Color.BLACK,
+) {
+    this.println("\\node[scale=$scale, color=${color.toColorString()}, anchor=$anchor, align=center] at ($x,${y}) {\\tiny $text};")
+}
+
+fun PrintWriter.drawRect(
+    xStart: Double,
+    yStart: Double,
+    xEnd: Double,
+    yEnd: Double,
+    strokeColor: Color = Color.BLACK,
+    fillColor: Color? = null,
+) {
+    val fillString = fillColor?.let { "fill=${fillColor.toColorString()},fill opacity=${strokeColor.toAlphaString()}" } ?: ""
+    val outlineString = "color=${strokeColor.toColorString()},draw opacity=${strokeColor.toAlphaString()}"
+    this.println("\\${if (fillColor != null) "fill" else ""}draw[$outlineString,line width=$LINE_WIDTH,$fillString] ($xStart,$yStart) rectangle ($xEnd,$yEnd);")
+}
+
+fun PrintWriter.drawCircle(x: Double, y: Double, radius: Double, color: Color = Color.BLACK) {
+    this.println("\\draw[line width=$LINE_WIDTH, color=${color.toColorString()}] ($x,$y) circle ($radius);")
+}
+
+private fun Color.toColorString() = "{rgb,255:red,$red; green,$green; blue,$blue}"
+
+private fun Color.toAlphaString() = "${alpha.toDouble().minMaxNormalize(0.0, 255.0)}"
+
+private fun Double.minMaxNormalize(min: Double, max: Double) = (this - min) / (max - min)
