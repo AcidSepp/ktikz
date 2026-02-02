@@ -77,11 +77,17 @@ fun PrintWriter.drawRect(
     xEnd: Double,
     yEnd: Double,
     strokeColor: Color = Color.BLACK,
+    lineWidth: Double = LINE_WIDTH,
     fillColor: Color? = null,
 ) {
-    val fillString = fillColor?.let { "fill=${fillColor.toColorString()},fill opacity=${strokeColor.toAlphaString()}" } ?: ""
-    val outlineString = "color=${strokeColor.toColorString()},draw opacity=${strokeColor.toAlphaString()}"
-    this.println("\\${if (fillColor != null) "fill" else ""}draw[$outlineString,line width=$LINE_WIDTH,$fillString] ($xStart,$yStart) rectangle ($xEnd,$yEnd);")
+    val strokeOpacityString = if (strokeColor.alpha != 255) ", opacity=${strokeColor.toAlphaString()}" else ""
+    val strokeColorString = "color=${strokeColor.toColorString()}$strokeOpacityString"
+
+    val fillOpacity = if (fillColor != null && strokeColor.alpha != 255) ", fill opacity=${fillColor.toAlphaString()}" else ""
+    val fillString = fillColor?.let { ", fill=${fillColor.toColorString()}$fillOpacity" } ?: ""
+    val fillPrefix = fillColor?.let { "fill" } ?: ""
+
+    this.println("\\${fillPrefix}draw[$strokeColorString, line width=$lineWidth$fillString] ($xStart,$yStart) rectangle ($xEnd,$yEnd);")
 }
 
 fun PrintWriter.drawCircle(x: Double, y: Double, radius: Double, color: Color = Color.BLACK) {
